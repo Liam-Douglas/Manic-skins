@@ -1,0 +1,28 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-10-18T10:21:37Z"},
+  "title": "Arctic Skins",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 414, "h": 896, "title": "DS portrait", "radius": 55},
+    "DS-landscape.dc.html": {"x": 494, "y": 0, "w": 896, "h": 414, "title": "DS landscape", "radius": 55},
+    "DS-taco.dc.html": {"x": 1470, "y": 0, "w": 414, "h": 896, "title": "DS portrait (Pocket Taco)", "radius": 55},
+    "3DS-portrait.dc.html": {"x": 0, "y": 1400, "w": 414, "h": 896, "title": "3DS portrait", "radius": 55},
+    "3DS-landscape.dc.html": {"x": 494, "y": 1400, "w": 896, "h": 414, "title": "3DS landscape", "radius": 55},
+    "3DS-taco.dc.html": {"x": 1470, "y": 1400, "w": 414, "h": 896, "title": "3DS portrait (Pocket Taco)", "radius": 55}
+  },
+  "order": [
+    "Main.dc.html",
+    "DS-landscape.dc.html",
+    "DS-taco.dc.html",
+    "3DS-portrait.dc.html",
+    "3DS-landscape.dc.html",
+    "3DS-taco.dc.html"
+  ],
+  "notes": {
+    "ds": {"x": 0, "y": -300, "text": "Nintendo DS", "kind": "title1", "maxW": 1884},
+    "n3ds": {"x": 0, "y": 1100, "text": "Nintendo 3DS", "kind": "title1", "maxW": 1884}
+  },
+  "designSystems": []
+}
