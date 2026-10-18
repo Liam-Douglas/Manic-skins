@@ -905,7 +905,7 @@ def pocket_skins():
     base = "com.liamdouglas.manic.pocket."
 
     def skin(key, name, ident, game, portrait, landscape, frames, safe=None):
-        return key, {"name": name, "file": name.replace(" ", "-"), "identifier": base + ident, "version": "v1",
+        return key, {"name": name, "file": name.replace(" ", "-"), "identifier": base + ident, "version": "v2",
                      "gameType": game,
                      "orientations": {"portrait": from_styled(portrait, frames, safe),
                                       "landscape": from_styled(landscape, frames)}}
