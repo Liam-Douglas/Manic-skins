@@ -16,9 +16,14 @@ body{margin:0}
 button{font-family:inherit;margin:0;padding:0;cursor:pointer}
 a{color:#1c1c21}a:hover{color:#4a4844}
 .mesh{background-image:url(/_blob/8192c6d469f7ad15c4d10c0ea8475386);background-size:11.553px 11.553px}
+.tex-grain{background-image:url(/_blob/4278af5b59bfabbaafc4c035778876d1);background-size:41.08px 41.08px}
+.tex-speckle{background-image:url(/_blob/394dbd3bb96d337d5867997fcee5c66c);background-size:41.08px 41.08px}
+.tex-pebble{background-image:url(/_blob/9e149dcb5240ae2c905e7a9a060b482e);background-size:82.16px 82.16px}
 </style>
 </helmet>
 <div style="position: relative; width: 414px; height: 896px; overflow: hidden; border-radius: 55px; background: linear-gradient(180deg, {{bodyTop}} 0%, {{bodyBottom}} 100%); font-family: 'Rubik', sans-serif; color: #ffffff">
+
+<div data-role="texture" class="{{texture}}" aria-hidden="true" style="position: absolute; left: 0px; top: 0px; width: 414px; height: 896px; pointer-events: none"></div>
 
 <div data-role="frame" aria-hidden="true" style="position: absolute; left: 8px; top: 8px; width: 398px; height: 880px; border: 1px solid rgba(0,0,0,0.08); border-radius: 50px"></div>
 
@@ -58,7 +63,7 @@ a{color:#1c1c21}a:hover{color:#4a4844}
 
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#ffd23f","options":["#ffd23f","#ffffff","#3ee0d0","#9cff57"],"section":"Style"},"body":{"editor":"enum","default":"taco","options":["taco","taco light","taco dark"],"section":"Style"},"filter":{"editor":"enum","default":"R3BEL mesh","options":["R3BEL mesh","none"],"section":"Screen"},"$preview":{"width":414,"height":896}}'>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#ffd23f","options":["#ffd23f","#ffffff","#3ee0d0","#9cff57"],"section":"Style"},"body":{"editor":"enum","default":"taco","options":["taco","taco light","taco dark"],"section":"Style"},"texture":{"editor":"enum","default":"plastic grain","options":["plastic grain","speckle","pebbled","none"],"section":"Style"},"filter":{"editor":"enum","default":"R3BEL mesh","options":["R3BEL mesh","none"],"section":"Screen"},"$preview":{"width":414,"height":896}}'>
 class Component extends DCLogic {
   renderVals() {
     const bodies = {
@@ -68,7 +73,7 @@ class Component extends DCLogic {
     };
     const b = bodies[this.props.body ?? 'taco'] || bodies['taco'];
     const mesh = (this.props.filter ?? 'R3BEL mesh') === 'none' ? '' : 'mesh';
-    return { accent: this.props.accent ?? '#ffd23f', bodyTop: b[0], bodyBottom: b[1], mesh: mesh };
+    return { accent: this.props.accent ?? '#ffd23f', bodyTop: b[0], bodyBottom: b[1], mesh: mesh, texture: ({'plastic grain': 'tex-grain', 'speckle': 'tex-speckle', 'pebbled': 'tex-pebble'})[this.props.texture ?? 'plastic grain'] || '' };
   }
 }
 </script>

@@ -20,6 +20,8 @@ CHROME = "/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_sh
 SCALE = 3
 OUT = os.path.join(build.DIST, "compare")
 # canvas asset ids of the uploaded R3BEL mesh tiles
+TEXTURE_BLOBS = {"grain": "4278af5b59bfabbaafc4c035778876d1", "speckle": "394dbd3bb96d337d5867997fcee5c66c",
+                 "pebble": "9e149dcb5240ae2c905e7a9a060b482e"}
 MESH_BLOBS = {"portrait": "8192c6d469f7ad15c4d10c0ea8475386", "landscape": "c04d6cf2230417e8316642f2ca8a0527"}
 
 
@@ -31,6 +33,8 @@ def prepare(html, vals=None):
     html = html.replace('<script src="./support.js"></script>', "")
     html = re.sub(r'<script type="text/x-dc".*?</script>', "", html, flags=re.S)
     html = re.sub(r'<link[^>]*fonts\.g[^>]*>', "", html)
+    for name, blob in TEXTURE_BLOBS.items():
+        html = html.replace(f"url(/_blob/{blob})", "url('file://%s')" % os.path.join(build.TEXTURES, f"{name}.png"))
     for orient, blob in MESH_BLOBS.items():
         html = html.replace(f"url(/_blob/{blob})", "url('file://%s')" % os.path.join(build.THIRD_PARTY, f"mesh-{orient}.png"))
     fonts = os.path.join(build.ROOT, "fonts")

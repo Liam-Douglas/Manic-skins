@@ -489,6 +489,27 @@ def draw_styled_asset(path, it):
     pen.save()
 
 
+TEXTURES = os.path.join(ROOT, "generator", "textures")
+
+
+def draw_texture(pen, prim, orient):
+    """Repeat a body texture tile (make_textures.py) at 3 px per device point. The PDF stores the tile
+    once and places it many times, so the file stays small."""
+    from reportlab.lib.utils import ImageReader
+    tile = ImageReader(os.path.join(TEXTURES, f"{prim['kind']}.png"))
+    tw, th = tile.getSize()
+    density = 3 * DEVICE_PT[orient]
+    sw, sh = tw / density, th / density
+    x0, y0, w, h = prim["rect"]
+    y = y0
+    while y < y0 + h:
+        x = x0
+        while x < x0 + w:
+            pen.c.drawImage(tile, x, pen.h - y - sh, sw, sh, mask="auto")
+            x += sw
+        y += sh
+
+
 def draw_styled_background(path, o):
     W, H = o["size"]
     pen = Pen(path, W, H)
@@ -513,6 +534,8 @@ def draw_styled_background(path, o):
                 pen.circle(cx, cy, prim["r"] * k, fill=Color(g[0], g[1], g[2], alpha=a))
         elif t == "text":
             draw_label(pen, prim)
+        elif t == "texture":
+            draw_texture(pen, prim, "portrait" if H > W else "landscape")
     c.restoreState()
     for f in o["filters"]:
         if f["kind"] == "r3bel":
@@ -867,9 +890,9 @@ if os.path.exists(os.path.join(THIRD_PARTY, "mesh-portrait.png")):
     SKINS["r3bel-test"] = filter_test("r3bel", "R3BEL-Mesh")
 
 
-def from_styled(fname, frames, safe_y=None):
+def from_styled(fname, frames, safe_y=None, overrides=None):
     with open(os.path.join(CANVAS, fname)) as fh:
-        o = parse_styled(fh.read(), frames)
+        o = parse_styled(fh.read(), frames, overrides)
     if safe_y is not None:
         o["safe_y"] = safe_y
     o["canvas_file"] = fname
@@ -899,6 +922,21 @@ def pocket_skins():
 
 
 SKINS.update(pocket_skins())
+
+
+def texture_test(cls, label):
+    """Pocket DS with one body texture, for comparing textures on the phone."""
+    over = {"texture": cls}
+    return {"name": f"Pocket DS {label}", "file": f"Pocket-DS-{label}",
+            "identifier": f"com.liamdouglas.manic.pocket.ds.{label.lower()}", "version": "v1",
+            "gameType": "public.aoshuang.game.ds",
+            "orientations": {"portrait": from_styled("Pocket-DS-portrait.dc.html", DS_FRAMES, overrides=over),
+                             "landscape": from_styled("Pocket-DS-landscape.dc.html", DS_FRAMES, overrides=over)}}
+
+
+SKINS["tex-grain"] = texture_test("tex-grain", "Grain")
+SKINS["tex-speckle"] = texture_test("tex-speckle", "Speckle")
+SKINS["tex-pebble"] = texture_test("tex-pebble", "Pebbled")
 
 
 def check(names):

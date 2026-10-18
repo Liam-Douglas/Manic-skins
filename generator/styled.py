@@ -32,7 +32,14 @@ def template_values(html):
         vals["bodyTop"], vals["bodyBottom"] = bodies[body]
     if "filter" in props:
         vals["mesh"] = "" if props["filter"]["default"] == "none" else "mesh"
+    m = re.search(r"\(\{([^}]*)\}\)\[this\.props\.texture", html)
+    if m and "texture" in props:
+        classes = dict(re.findall(r"'([^']+)':\s*'([^']+)'", m.group(1)))
+        vals["texture"] = classes.get(props["texture"]["default"], "")
     return vals
+
+
+TEXTURE_CLASSES = {"tex-grain": "grain", "tex-speckle": "speckle", "tex-pebble": "pebble"}
 
 
 def fill_holes(s, vals):
@@ -198,8 +205,10 @@ def parse_path(d):
     return subs
 
 
-def parse(html, input_frames):
+def parse(html, input_frames, overrides=None):
+    """overrides: hole values to use instead of the artboard's tweak defaults (for test variants)."""
     vals = template_values(html)
+    vals.update(overrides or {})
     tree = _Tree()
     tree.feed(fill_holes(html, vals))
     root = next(el for el in walk(tree.root)
@@ -253,6 +262,10 @@ def parse(html, input_frames):
             which = a.get("data-screen")
             o["screens"].append({"which": which, "in": input_frames[which], "out": (x, y, w, h), "hole_r": r,
                                  "touch": a.get("data-touch") == "true"})
+        elif role == "texture":
+            for cls in a.get("class", "").split():
+                if cls in TEXTURE_CLASSES:
+                    o["bg"].append({"t": "texture", "kind": TEXTURE_CLASSES[cls], "rect": (x, y, w, h)})
         elif role == "filter":
             if "mesh" in a.get("class", "").split():
                 o["filters"].append({"rect": (x, y, w, h), "r": r, "kind": "r3bel"})
