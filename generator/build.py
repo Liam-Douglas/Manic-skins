@@ -319,8 +319,35 @@ FILTERS = {
 }
 
 
+# Third-party mesh tiles (git-ignored, see extract_r3bel.py): 3 px per point on a 430x932 pt phone
+THIRD_PARTY = os.path.join(ROOT, "third_party", "r3bel")
+DEVICE_PT = {"portrait": 430 / 414, "landscape": 932 / 896}  # device points per mapping point
+
+
+def draw_tile_filter(pen, s, orient):
+    """Repeat the extracted mesh tile over a screen at its native pixel size on the phone."""
+    from reportlab.lib.utils import ImageReader
+    tile = Image.open(os.path.join(THIRD_PARTY, f"mesh-{orient}.png")).convert("RGBA")
+    x, y, w, h = s["out"]
+    density = 3 * DEVICE_PT[orient]  # tile pixels per mapping point
+    pw, ph = int(w * density + 0.999), int(h * density + 0.999)
+    sheet = Image.new("RGBA", (pw, ph), (0, 0, 0, 0))
+    for ty in range(0, ph, tile.height):
+        for tx in range(0, pw, tile.width):
+            sheet.paste(tile, (tx, ty))
+    c = pen.c
+    c.saveState()
+    clip = c.beginPath()
+    pen.rrect(clip, x, y, w, h, s["hole_r"])
+    c.clipPath(clip, stroke=0, fill=0)
+    c.drawImage(ImageReader(sheet), x, pen.h - y - h, pw / density, ph / density, mask="auto")
+    c.restoreState()
+
+
 def draw_filter(pen, s, kind):
     """Lines on the game's pixel boundaries, so the pattern stays aligned at any scale."""
+    if kind == "r3bel":
+        return draw_tile_filter(pen, s, "portrait" if pen.h > pen.w else "landscape")
     share, alpha, vertical = FILTERS[kind]
     x, y, w, h = s["out"]
     cols, rows = s["in"][2], s["in"][3]
@@ -685,6 +712,8 @@ def filter_test(kind, label):
 
 SKINS["lcd-test"] = filter_test("lcd", "LCD")
 SKINS["scan-test"] = filter_test("scanlines", "Scanlines")
+if os.path.exists(os.path.join(THIRD_PARTY, "mesh-portrait.png")):
+    SKINS["r3bel-test"] = filter_test("r3bel", "R3BEL-Mesh")
 
 
 def check(names):

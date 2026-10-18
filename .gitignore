@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 dist/compare/
+third_party/
+dist/*R3BEL*
