@@ -19,24 +19,32 @@ import build  # noqa: E402
 CHROME = "/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell"
 SCALE = 3
 OUT = os.path.join(build.DIST, "compare")
+# canvas asset ids of the uploaded R3BEL mesh tiles
+MESH_BLOBS = {"portrait": "8192c6d469f7ad15c4d10c0ea8475386", "landscape": "c04d6cf2230417e8316642f2ca8a0527"}
 
 
-def prepare(html):
-    html = html.replace("{{bodyTop}}", build.STYLE["body_top"]).replace("{{bodyBottom}}", build.STYLE["body_bottom"])
-    html = html.replace("{{accent}}", build.STYLE["accent"])
+def prepare(html, vals=None):
+    """Fill the artboard's holes and point fonts and uploaded tiles at local files."""
+    vals = vals or {"bodyTop": build.STYLE["body_top"], "bodyBottom": build.STYLE["body_bottom"],
+                    "accent": build.STYLE["accent"]}
+    html = re.sub(r"\{\{\s*(\w+)\s*\}\}", lambda m: vals.get(m.group(1), ""), html)
     html = html.replace('<script src="./support.js"></script>', "")
     html = re.sub(r'<script type="text/x-dc".*?</script>', "", html, flags=re.S)
     html = re.sub(r'<link[^>]*fonts\.g[^>]*>', "", html)
+    for orient, blob in MESH_BLOBS.items():
+        html = html.replace(f"url(/_blob/{blob})", "url('file://%s')" % os.path.join(build.THIRD_PARTY, f"mesh-{orient}.png"))
     fonts = os.path.join(build.ROOT, "fonts")
-    face = ("<style>@font-face{font-family:'Space Grotesk';font-weight:500;src:url('file://%s/SpaceGrotesk-Medium.ttf')}"
-            "@font-face{font-family:'Space Grotesk';font-weight:700;src:url('file://%s/SpaceGrotesk-Bold.ttf')}"
-            "html,body{background:#000}</style>" % (fonts, fonts))
+    faces = "".join("@font-face{font-family:'%s';font-weight:%d;src:url('file://%s/%s')}" % (fam, wt, fonts, f)
+                    for fam, wt, f in (("Space Grotesk", 500, "SpaceGrotesk-Medium.ttf"),
+                                       ("Space Grotesk", 700, "SpaceGrotesk-Bold.ttf"),
+                                       ("Rubik", 500, "Rubik-Medium.ttf"), ("Rubik", 700, "Rubik-Bold.ttf")))
+    face = "<style>%shtml,body{background:#000}</style>" % faces
     return html.replace("<helmet>", face).replace("</helmet>", "")
 
 
-def render_artboard(fname, size, out_png):
+def render_artboard(fname, size, out_png, vals=None):
     with open(os.path.join(build.CANVAS, fname)) as fh:
-        html = prepare(fh.read())
+        html = prepare(fh.read(), vals)
     tmp = tempfile.NamedTemporaryFile("w", suffix=".html", delete=False)
     tmp.write(html)
     tmp.close()
@@ -57,7 +65,7 @@ def compare(skin_key):
             continue
         W, H = o["size"]
         canvas_png = os.path.join(OUT, f"{skin['file']}-{orient}-canvas.png")
-        a = render_artboard(o["canvas_file"], o["size"], canvas_png)
+        a = render_artboard(o["canvas_file"], o["size"], canvas_png, o.get("vals"))
         b = Image.open(os.path.join(build.DIST, f"{skin['file']}-{orient}.png")).convert("RGB")
         if a.size != b.size:
             a = a.resize(b.size)

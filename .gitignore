@@ -3,3 +3,4 @@ __pycache__/
 dist/compare/
 third_party/
 dist/*R3BEL*
+dist/Pocket-*

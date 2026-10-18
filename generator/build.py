@@ -22,6 +22,7 @@ from reportlab.pdfgen import canvas
 from reportlab.pdfgen.canvas import FILL_EVEN_ODD
 
 from artboard import check_rules, parse_artboard
+from styled import parse as parse_styled, parse_path
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONTS = os.path.join(ROOT, "fonts")
@@ -29,6 +30,10 @@ DIST = os.path.join(ROOT, "dist")
 
 pdfmetrics.registerFont(TTFont("SG-Medium", os.path.join(FONTS, "SpaceGrotesk-Medium.ttf")))
 pdfmetrics.registerFont(TTFont("SG-Bold", os.path.join(FONTS, "SpaceGrotesk-Bold.ttf")))
+pdfmetrics.registerFont(TTFont("Rubik-Medium", os.path.join(FONTS, "Rubik-Medium.ttf")))
+pdfmetrics.registerFont(TTFont("Rubik-Bold", os.path.join(FONTS, "Rubik-Bold.ttf")))
+FONT_NAMES = {("Space Grotesk", "medium"): "SG-Medium", ("Space Grotesk", "bold"): "SG-Bold",
+              ("Rubik", "medium"): "Rubik-Medium", ("Rubik", "bold"): "Rubik-Bold"}
 
 # ---------------------------------------------------------------- style
 STYLE = {
@@ -371,6 +376,150 @@ def draw_filter(pen, s, kind):
 
 
 # ---------------------------------------------------------------- items
+# ---------------------------------------------------------------- styled artboards (styled.py)
+CAPS = {"butt": 0, "round": 1, "square": 2}
+JOINS = {"miter": 0, "round": 1, "bevel": 2}
+
+
+def rgba(c):
+    return Color(c[0], c[1], c[2], alpha=c[3])
+
+
+def font_name(spec):
+    return FONT_NAMES[(spec["family"], "bold" if spec["weight"] >= 600 else "medium")]
+
+
+def font_metrics(name):
+    face = pdfmetrics.getFont(name).face
+    return face.ascent / 1000, -face.descent / 1000
+
+
+def draw_shape(pen, rect_, r, fill=None, border=None, inset=None, open_top=False):
+    x, y, w, h = rect_
+    c = pen.c
+    if fill:
+        pen.fill_rrect(x, y, w, h, r, rgba(fill))
+    bw = border[0] if border else 0
+    if inset and inset[1]:  # CSS inset spread: a ring just inside the border
+        pen.stroke_rrect(x + bw, y + bw, w - 2 * bw, h - 2 * bw, max(r - bw, 0), rgba(inset[1]), inset[0])
+    if border and border[1]:
+        c.saveState()
+        if open_top:  # joins the bezel above it, so its top edge is not stroked
+            cp = c.beginPath()
+            cp.rect(x - 1, pen.h - (y + h) - 1, w + 2, h - r + 1)
+            c.clipPath(cp, stroke=0, fill=0)
+        pen.stroke_rrect(x, y, w, h, r, rgba(border[1]), border[0])
+        c.restoreState()
+
+
+def draw_label(pen, p):
+    f = p["font"]
+    name = font_name(f)
+    asc, _ = font_metrics(name)
+    base = p["top"] + asc * f["size"]
+    if p["width"]:  # CSS centres the text plus its trailing letter-spacing inside the padded box
+        cx = p["left"] + p["pad"] + (p["width"] - p["pad"]) / 2 - f["ls"] / 2
+        pen.text(p["text"], cx, base, name, f["size"], rgba(f["color"]), spacing=f["ls"])
+    else:
+        pen.text(p["text"], 0, base, name, f["size"], rgba(f["color"]), spacing=f["ls"], align="left",
+                 x=p["left"] + p["pad"])
+
+
+def draw_svgs(pen, svgs, box):
+    """Draw SVG icons centred in box, scaled from their viewBox as the browser does."""
+    bx, by, bw, bh = box
+    c = pen.c
+    for s in svgs:
+        sw, sh = s["size"]
+        k = sw / s["box"][0]
+        ox, oy = bx + (bw - sw) / 2, by + (bh - sh) / 2
+        for p in s["paths"]:
+            for pts, closed in parse_path(p["d"]):
+                path = c.beginPath()
+                path.moveTo(ox + pts[0][0] * k, pen.h - (oy + pts[0][1] * k))
+                for x, y in pts[1:]:
+                    path.lineTo(ox + x * k, pen.h - (oy + y * k))
+                if closed:
+                    path.close()
+                fill, stroke = p["fill"], s["stroke"]
+                if fill:
+                    c.setFillColor(rgba(fill))
+                if stroke:
+                    c.setStrokeColor(rgba(stroke))
+                    c.setLineWidth(s["width"] * k)
+                    c.setLineCap(CAPS[s["cap"]])
+                    c.setLineJoin(JOINS[s["join"]])
+                c.drawPath(path, stroke=1 if stroke else 0, fill=1 if fill else 0)
+
+
+def draw_button_face(pen, w, h, style):
+    """A button's own art: its shape, then its icon or its centred text."""
+    draw_shape(pen, (0, 0, w, h), style["r"], style["fill"], style["border"])
+    if style["svgs"]:
+        draw_svgs(pen, style["svgs"], (0, 0, w, h))
+    elif style["text"]:
+        f = style["font"]
+        name = font_name(f)
+        asc, desc = font_metrics(name)
+        pen.text(style["text"], w / 2 - f["ls"] / 2, h / 2 + (asc - desc) / 2 * f["size"], name, f["size"],
+                 rgba(f["color"]), spacing=f["ls"])
+
+
+def draw_styled_asset(path, it):
+    kind = it["kind"]
+    if kind == "dpad":
+        w, h = it["frame"][2], it["frame"][3]
+        pen = Pen(path, w, h)
+        for (ax, ay, aw, ah), r, fill in it["arms"]:
+            pen.fill_rrect(ax, ay, aw, ah, r, rgba(fill))
+        for box, svgs in it["arrows"]:
+            draw_svgs(pen, svgs, box)
+    elif kind == "thumb":
+        w, h = it["thumb"][2], it["thumb"][3]
+        pen = Pen(path, w, h)
+        draw_button_face(pen, w, h, it["style"])
+        ring = it["style"].get("ring")
+        if ring and ring[1]:
+            d, (lw, rc) = ring[0], ring[1]
+            pen.stroke_rrect((w - d) / 2, (h - d) / 2, d, d, d / 2, rgba(rc), lw)
+    else:
+        w, h = it["frame"][2], it["frame"][3]
+        pen = Pen(path, w, h)
+        draw_button_face(pen, w, h, it["style"])
+    pen.save()
+
+
+def draw_styled_background(path, o):
+    W, H = o["size"]
+    pen = Pen(path, W, H)
+    c = pen.c
+    c.saveState()
+    p = c.beginPath()
+    p.rect(0, 0, W, H)
+    for s in o["screens"]:
+        x, y, w, h = s["out"]
+        pen.rrect(p, x, y, w, h, s["hole_r"])
+    c.clipPath(p, stroke=0, fill=0, fillMode=FILL_EVEN_ODD)
+    c.linearGradient(0, H, 0, 0, (rgba(o["body"][0]), rgba(o["body"][1])), extend=True)
+    for prim in o["bg"]:  # canvas order, so later elements sit on top as they do on the artboard
+        t = prim["t"]
+        if t == "rrect":
+            draw_shape(pen, prim["rect"], prim["r"], prim.get("fill"), prim.get("border"), prim.get("inset"),
+                       prim.get("open_top", False))
+        elif t == "glow":
+            cx, cy = prim["c"]
+            g = prim["color"]
+            for k, a in ((3.0, 0.06), (2.2, 0.10), (1.6, 0.18)):
+                pen.circle(cx, cy, prim["r"] * k, fill=Color(g[0], g[1], g[2], alpha=a))
+        elif t == "text":
+            draw_label(pen, prim)
+    c.restoreState()
+    for f in o["filters"]:
+        if f["kind"] == "r3bel":
+            draw_tile_filter(pen, {"out": f["rect"], "hole_r": f["r"]}, "portrait" if H > W else "landscape")
+    pen.save()
+
+
 def frame(x, y, w, h):
     return {"x": x, "y": y, "width": w, "height": h}
 
@@ -442,7 +591,9 @@ def build_assets(o, workdir, prefix):
         if kind != "touch":
             name = f"{prefix}_{it['id']}.pdf"
             p = os.path.join(workdir, name)
-            if kind == "round":
+            if o.get("styled"):
+                draw_styled_asset(p, it)
+            elif kind == "round":
                 asset_round(p, w, it["icon"], it.get("accent", False))
             elif kind == "face":
                 asset_face(p, w, it["letter"], it["light"])
@@ -525,7 +676,7 @@ def build_skin(skin):
         previews = []
         for orient, o in skin["orientations"].items():
             bg = f"{orient}_bg.pdf"
-            draw_background(os.path.join(work, bg), o)
+            (draw_styled_background if o.get("styled") else draw_background)(os.path.join(work, bg), o)
             items = build_assets(o, work, orient)
             reps[orient] = orientation_json(o, bg, items)
             if not debug:
@@ -714,6 +865,40 @@ SKINS["lcd-test"] = filter_test("lcd", "LCD")
 SKINS["scan-test"] = filter_test("scanlines", "Scanlines")
 if os.path.exists(os.path.join(THIRD_PARTY, "mesh-portrait.png")):
     SKINS["r3bel-test"] = filter_test("r3bel", "R3BEL-Mesh")
+
+
+def from_styled(fname, frames, safe_y=None):
+    with open(os.path.join(CANVAS, fname)) as fh:
+        o = parse_styled(fh.read(), frames)
+    if safe_y is not None:
+        o["safe_y"] = safe_y
+    o["canvas_file"] = fname
+    return o
+
+
+def pocket_skins():
+    """Pocket look, from the canvas 'Pocket' page. Its screens use the R3BEL mesh (personal builds only)."""
+    ds, n3 = "public.aoshuang.game.ds", "public.aoshuang.game.3ds"
+    base = "com.liamdouglas.manic.pocket."
+
+    def skin(key, name, ident, game, portrait, landscape, frames, safe=None):
+        return key, {"name": name, "file": name.replace(" ", "-"), "identifier": base + ident, "version": "v1",
+                     "gameType": game,
+                     "orientations": {"portrait": from_styled(portrait, frames, safe),
+                                      "landscape": from_styled(landscape, frames)}}
+
+    return dict([
+        skin("pocket-ds", "Pocket DS", "ds", ds, "Pocket-DS-portrait.dc.html", "Pocket-DS-landscape.dc.html", DS_FRAMES),
+        skin("pocket-taco-ds", "Pocket Taco DS", "taco.ds", ds, "Pocket-DS-taco.dc.html", "Pocket-DS-landscape.dc.html",
+             DS_FRAMES, TACO_SAFE_Y),
+        skin("pocket-3ds", "Pocket 3DS", "3ds", n3, "Pocket-3DS-portrait.dc.html", "Pocket-3DS-landscape.dc.html",
+             N3DS_FRAMES),
+        skin("pocket-taco-3ds", "Pocket Taco 3DS", "taco.3ds", n3, "Pocket-3DS-taco.dc.html",
+             "Pocket-3DS-landscape.dc.html", N3DS_FRAMES, TACO_SAFE_Y),
+    ])
+
+
+SKINS.update(pocket_skins())
 
 
 def check(names):
