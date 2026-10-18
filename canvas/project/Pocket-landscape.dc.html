@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pocket DS, landscape</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+button{font-family:inherit;margin:0;padding:0;cursor:pointer}
+a{color:#ffffff}a:hover{color:#fff0f0}
+</style>
+</helmet>
+<div style="position: relative; width: 896px; height: 414px; overflow: hidden; border-radius: 55px; background: linear-gradient(180deg, {{bodyTop}} 0%, {{bodyBottom}} 100%); font-family: 'Rubik', sans-serif; color: #ffffff">
+
+<div aria-hidden="true" style="position: absolute; left: 8px; top: 8px; width: 880px; height: 398px; border: 1px solid rgba(0,0,0,0.08); border-radius: 52px"></div>
+
+<div aria-hidden="true" style="position: absolute; left: 216px; top: 15px; width: 464px; height: 385px; border-radius: 20px; background: #17171b; border: 1px solid rgba(0,0,0,0.30); box-shadow: inset 0 0 0 3px rgba(255,255,255,0.04)"></div>
+<div style="position: absolute; left: 222px; top: 21px; width: 452px; height: 373px; border-radius: 10px; background: #6e8c8c; color: #0f1717; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px">
+<div style="font-size: 12px; font-weight: 700; letter-spacing: 2px">TOP SCREEN</div>
+<div style="font-size: 11px; font-weight: 500">452 × 373 · 1.77× (10% taller)</div>
+</div>
+<div aria-hidden="true" style="position: absolute; left: 222px; top: 21px; width: 452px; height: 373px; border-radius: 10px; background: {{filterTop}}; pointer-events: none"></div>
+
+<div aria-hidden="true" style="position: absolute; left: 691px; top: 137px; width: 182px; height: 140px; border-radius: 18px; background: #17171b; border: 1px solid rgba(0,0,0,0.30); box-shadow: inset 0 0 0 3px rgba(255,255,255,0.04)"></div>
+<div style="position: absolute; left: 698px; top: 144px; width: 168px; height: 126px; border-radius: 8px; background: #6e8c8c; color: #0f1717; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px">
+<div style="font-size: 10px; font-weight: 700; letter-spacing: 2px">TOUCH</div>
+<div style="font-size: 10px; font-weight: 500">168 × 126</div>
+</div>
+<div aria-hidden="true" style="position: absolute; left: 698px; top: 144px; width: 168px; height: 126px; border-radius: 8px; background: {{filterBottom}}; pointer-events: none"></div>
+
+<button aria-label="Menu" style="position: absolute; left: 106px; top: 50px; width: 44px; height: 44px; border-radius: 50%; background: #1c1c21; border: 0; box-shadow: 0 3px 0 rgba(0,0,0,0.30); color: #ffffff; display: flex; align-items: center; justify-content: center">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h12M4 10h12M4 14h12"></path></svg>
+</button>
+<div style="position: absolute; left: 98px; top: 102px; width: 60px; text-align: center; padding-left: 1.5px; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; color: #4a4844">MENU</div>
+
+<div aria-hidden="true" style="position: absolute; left: 124px; top: 299px; width: 8px; height: 8px; border-radius: 50%; background: #7cff6b; box-shadow: 0 0 8px #7cff6b"></div>
+<div style="position: absolute; left: 98px; top: 313px; width: 60px; text-align: center; padding-left: 1.5px; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; color: #4a4844">PWR</div>
+
+<button aria-label="Select" style="position: absolute; left: 96px; top: 352px; width: 64px; height: 26px; border-radius: 13px; background: #3a3a40; border: 0; color: #ffffff; font-size: 9px; font-weight: 700; letter-spacing: 1.2px">SELECT</button>
+
+<button aria-label="Fast forward" style="position: absolute; left: 760px; top: 50px; width: 44px; height: 44px; border-radius: 50%; background: #1c1c21; border: 0; box-shadow: 0 3px 0 rgba(0,0,0,0.30); color: #ffffff; display: flex; align-items: center; justify-content: center">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l6 5-6 5zM10.5 5l6 5-6 5z"></path></svg>
+</button>
+<div style="position: absolute; left: 752px; top: 102px; width: 60px; text-align: center; padding-left: 1.5px; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; color: #4a4844">FAST</div>
+
+<button aria-label="Swap screens" style="position: absolute; left: 760px; top: 294px; width: 44px; height: 44px; border-radius: 50%; background: {{accent}}; border: 0; box-shadow: 0 3px 0 rgba(0,0,0,0.30); color: #1c1c21; display: flex; align-items: center; justify-content: center">
+<svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15V5M4 8l3-3 3 3M13 5v10M10 12l3 3 3-3"></path></svg>
+</button>
+
+<button aria-label="Start" style="position: absolute; left: 750px; top: 352px; width: 64px; height: 26px; border-radius: 13px; background: #3a3a40; border: 0; color: #ffffff; font-size: 9px; font-weight: 700; letter-spacing: 1.2px">START</button>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#ffd23f","options":["#ffd23f","#ffffff","#3ee0d0","#9cff57"],"section":"Style"},"body":{"editor":"enum","default":"taco","options":["taco","taco light","taco dark"],"section":"Style"},"filter":{"editor":"enum","default":"LCD grid","options":["LCD grid","scanlines","none"],"section":"Screen"},"$preview":{"width":896,"height":414}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const bodies = {
+      'taco': ['#dad8d3', '#cdcbc6'],
+      'taco light': ['#e4e2dd', '#d8d6d1'],
+      'taco dark': ['#cbc9c4', '#bdbbb6']
+    };
+    const b = bodies[this.props.body ?? 'taco'] || bodies['taco'];
+    return { accent: this.props.accent ?? '#ffd23f', bodyTop: b[0], bodyBottom: b[1], filterTop: this.fx(452, 373), filterBottom: this.fx(168, 126) };
+  }
+  fx(w, h) {
+    const f = this.props.filter ?? 'LCD grid';
+    const cw = w / 256, ch = h / 192;
+    if (f === 'none') return 'none';
+    if (f === 'scanlines') {
+      const t = (ch * 0.35).toFixed(3);
+      return `linear-gradient(to bottom, rgba(0,0,0,0.24) 0 ${t}px, transparent ${t}px) 0 0 / 100% ${ch}px`;
+    }
+    const lw = (cw * 0.2).toFixed(3), lh = (ch * 0.2).toFixed(3);
+    return `linear-gradient(to right, rgba(0,0,0,0.2) 0 ${lw}px, transparent ${lw}px) 0 0 / ${cw}px ${ch}px, linear-gradient(to bottom, rgba(0,0,0,0.2) 0 ${lh}px, transparent ${lh}px) 0 0 / ${cw}px ${ch}px`;
+  }
+}
+</script>
+</body>
+</html>

@@ -2,15 +2,24 @@
   "v": 3,
   "createdOnFiles": {"v": 1, "at": "2026-10-18T10:21:37Z"},
   "title": "Arctic Skins",
-  "launch": {"view": "canvas"},
-  "pages": [],
+  "launch": {"view": "canvas", "page": "redesign"},
+  "pages": [
+    {"id": "built", "name": "Built skins"},
+    {"id": "redesign", "name": "Redesign"}
+  ],
   "boards": {
     "Main.dc.html": {"x": 0, "y": 0, "w": 414, "h": 896, "title": "DS portrait", "radius": 55},
     "DS-landscape.dc.html": {"x": 494, "y": 0, "w": 896, "h": 414, "title": "DS landscape", "radius": 55},
     "DS-taco.dc.html": {"x": 1470, "y": 0, "w": 414, "h": 896, "title": "DS portrait (Pocket Taco)", "radius": 55},
     "3DS-portrait.dc.html": {"x": 0, "y": 1400, "w": 414, "h": 896, "title": "3DS portrait", "radius": 55},
     "3DS-landscape.dc.html": {"x": 494, "y": 1400, "w": 896, "h": 414, "title": "3DS landscape", "radius": 55},
-    "3DS-taco.dc.html": {"x": 1470, "y": 1400, "w": 414, "h": 896, "title": "3DS portrait (Pocket Taco)", "radius": 55}
+    "3DS-taco.dc.html": {"x": 1470, "y": 1400, "w": 414, "h": 896, "title": "3DS portrait (Pocket Taco)", "radius": 55},
+    "Glacier-portrait.dc.html": {"x": 0, "y": 0, "w": 414, "h": 896, "title": "Glacier · DS portrait", "radius": 55, "page": "redesign"},
+    "Glacier-landscape.dc.html": {"x": 494, "y": 0, "w": 896, "h": 414, "title": "Glacier · DS landscape", "radius": 55, "page": "redesign"},
+    "Ember-portrait.dc.html": {"x": 0, "y": 1400, "w": 414, "h": 896, "title": "Ember · DS portrait", "radius": 55, "page": "redesign"},
+    "Ember-landscape.dc.html": {"x": 494, "y": 1400, "w": 896, "h": 414, "title": "Ember · DS landscape", "radius": 55, "page": "redesign"},
+    "Pocket-portrait.dc.html": {"x": 0, "y": 2800, "w": 414, "h": 896, "title": "Pocket · DS portrait", "radius": 55, "page": "redesign"},
+    "Pocket-landscape.dc.html": {"x": 494, "y": 2800, "w": 896, "h": 414, "title": "Pocket · DS landscape", "radius": 55, "page": "redesign"}
   },
   "order": [
     "Main.dc.html",
@@ -18,11 +27,20 @@
     "DS-taco.dc.html",
     "3DS-portrait.dc.html",
     "3DS-landscape.dc.html",
-    "3DS-taco.dc.html"
+    "3DS-taco.dc.html",
+    "Glacier-portrait.dc.html",
+    "Glacier-landscape.dc.html",
+    "Ember-portrait.dc.html",
+    "Ember-landscape.dc.html",
+    "Pocket-portrait.dc.html",
+    "Pocket-landscape.dc.html"
   ],
   "notes": {
     "ds": {"x": 0, "y": -300, "text": "Nintendo DS", "kind": "title1", "maxW": 1884},
-    "n3ds": {"x": 0, "y": 1100, "text": "Nintendo 3DS", "kind": "title1", "maxW": 1884}
+    "n3ds": {"x": 0, "y": 1100, "text": "Nintendo 3DS", "kind": "title1", "maxW": 1884},
+    "glacier": {"x": 0, "y": -300, "text": "A · Glacier", "kind": "title1", "maxW": 1390, "page": "redesign"},
+    "ember": {"x": 0, "y": 1100, "text": "B · Ember", "kind": "title1", "maxW": 1390, "page": "redesign"},
+    "pocket": {"x": 0, "y": 2500, "text": "C · Pocket", "kind": "title1", "maxW": 1390, "page": "redesign"}
   },
   "designSystems": []
 }

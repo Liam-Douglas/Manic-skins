@@ -228,6 +228,7 @@ def draw_background(path, o):
     pen = Pen(path, W, H)
     c = pen.c
     # even-odd clip: whole page minus every screen hole
+    c.saveState()
     p = c.beginPath()
     p.rect(0, 0, W, H)
     for s in o["screens"]:
@@ -302,7 +303,44 @@ def draw_background(path, o):
     # free text lines: (text, centre x, baseline, size, colour key)
     for text, cx, base, size, key in o.get("notes", []):
         pen.text(text, cx, base, "SG-Medium", size, col(STYLE[key]))
+    c.restoreState()
+
+    # optional screen filter: a faint pattern over each screen hole (the background draws over the game)
+    if o.get("filter"):
+        for s in o["screens"]:
+            draw_filter(pen, s, o["filter"])
     pen.save()
+
+
+FILTERS = {
+    # kind: (line width as a share of one game pixel, opacity, vertical lines too)
+    "lcd": (0.2, 0.20, True),
+    "scanlines": (0.35, 0.24, False),
+}
+
+
+def draw_filter(pen, s, kind):
+    """Lines on the game's pixel boundaries, so the pattern stays aligned at any scale."""
+    share, alpha, vertical = FILTERS[kind]
+    x, y, w, h = s["out"]
+    cols, rows = s["in"][2], s["in"][3]
+    cw, ch = w / cols, h / rows
+    c, H = pen.c, pen.h
+    c.saveState()
+    clip = c.beginPath()
+    pen.rrect(clip, x, y, w, h, s["hole_r"])
+    c.clipPath(clip, stroke=0, fill=0)
+    c.setFillColor(Color(0, 0, 0, alpha=alpha))
+    if vertical:
+        p = c.beginPath()
+        for i in range(cols + 1):
+            p.rect(x + i * cw, H - (y + h), cw * share, h)
+        c.drawPath(p, stroke=0, fill=1)
+    p = c.beginPath()
+    for j in range(rows + 1):
+        p.rect(x, H - (y + j * ch) - ch * share, w, ch * share)
+    c.drawPath(p, stroke=0, fill=1)
+    c.restoreState()
 
 
 # ---------------------------------------------------------------- items
@@ -632,6 +670,21 @@ def canvas_skins():
 
 
 SKINS.update(canvas_skins())
+
+
+def filter_test(kind, label):
+    """The tested Arctic Modern DS layout with a screen filter, for checking filters on device."""
+    orients = {"portrait": from_canvas("Main.dc.html", DS_FRAMES),
+               "landscape": from_canvas("DS-landscape.dc.html", DS_FRAMES)}
+    for o in orients.values():
+        o["filter"] = kind
+    return {"name": f"Arctic Modern DS {label}", "file": f"Arctic-Modern-DS-{label}",
+            "identifier": f"com.liamdouglas.manic.arcticmodern.ds.{kind}", "version": "v1",
+            "gameType": "public.aoshuang.game.ds", "orientations": orients}
+
+
+SKINS["lcd-test"] = filter_test("lcd", "LCD")
+SKINS["scan-test"] = filter_test("scanlines", "Scanlines")
 
 
 def check(names):
