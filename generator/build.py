@@ -595,7 +595,7 @@ SKINS = {
 # ---------------------------------------------------------------- skins built from the Arctic Skins canvas
 CANVAS = os.path.join(ROOT, "canvas", "project")
 DS_FRAMES = {"top": DS_TOP, "bottom": DS_BOTTOM}
-# 3DS core output: top 400x240 above bottom 320x240, centred. NOT confirmed on device yet.
+# 3DS core output: top 400x240 above bottom 320x240, centred. Confirmed on device (screens and touch).
 N3DS_FRAMES = {"top": (0, 0, 400, 240), "bottom": (40, 240, 320, 240)}
 
 
