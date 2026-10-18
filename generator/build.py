@@ -252,6 +252,27 @@ def draw_background(path, o):
         align = lab[3] if len(lab) > 3 else "center"
         pen.text(text, x, top + 9.5, "SG-Medium", 9, col(STYLE["label"]), spacing=2,
                  align=align, x=x)
+
+    # calibration ruler: a line every `step` pt from y0 to y1, labelled with its y value
+    if "ruler" in o:
+        y0, y1, step = o["ruler"]
+        for i, y in enumerate(range(y0, y1, step)):
+            if i % 2 == 0:
+                pen.fill_rrect(0, y, W, step, 0, WHITE(0.05))
+        for y in range(y0, y1 + 1, step):
+            major = y % 50 == 0
+            c.setStrokeColor(col(STYLE["accent"]) if major else WHITE(0.75))
+            c.setLineWidth(2 if major else 1)
+            c.line(0, H - y, W, H - y)
+            tc = col(STYLE["accent"]) if major else col(STYLE["icon"])
+            pen.text(str(y), 0, y - 1.5, "SG-Bold", 8, tc, align="left", x=14)
+            pen.text(str(y), W / 2, y - 1.5, "SG-Bold", 8, tc)
+            sw = pdfmetrics.stringWidth(str(y), "SG-Bold", 8)
+            pen.text(str(y), 0, y - 1.5, "SG-Bold", 8, tc, align="left", x=W - 14 - sw)
+
+    # free text lines: (text, centre x, baseline, size, colour key)
+    for text, cx, base, size, key in o.get("notes", []):
+        pen.text(text, cx, base, "SG-Medium", size, col(STYLE[key]))
     pen.save()
 
 
@@ -344,7 +365,7 @@ def render_preview(o, workdir, bg_name, items, out_png, scale=3, debug=False):
 def build_skin(skin):
     os.makedirs(DIST, exist_ok=True)
     results = []
-    for debug in (False, True):
+    for debug in ((True,) if skin.get("debug_only") else (False, True)):
         work = tempfile.mkdtemp()
         reps = {}
         previews = []
@@ -359,9 +380,10 @@ def build_skin(skin):
             else:
                 png = os.path.join(DIST, f"{skin['file']}-{orient}-debug.png")
                 previews.append(render_preview(o, work, bg, items, png, debug=True))
-        ident = skin["identifier"] + (".debug" if debug else "") + "." + skin["version"]
+        tag = debug and not skin.get("debug_only")
+        ident = skin["identifier"] + (".debug" if tag else "") + "." + skin["version"]
         info = {
-            "name": skin["name"] + (" (Debug)" if debug else ""),
+            "name": skin["name"] + (" (Debug)" if tag else ""),
             "identifier": ident,
             "gameTypeIdentifier": skin["gameType"],
             "debug": debug,
@@ -369,7 +391,7 @@ def build_skin(skin):
         }
         with open(os.path.join(work, "info.json"), "w") as fh:
             json.dump(info, fh, indent=2)
-        out = os.path.join(DIST, skin["file"] + ("-Debug" if debug else "") + ".manicskin")
+        out = os.path.join(DIST, skin["file"] + ("-Debug" if tag else "") + ".manicskin")
         with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
             for f in sorted(os.listdir(work)):
                 z.write(os.path.join(work, f), f)
@@ -434,6 +456,32 @@ def ds_landscape():
     }
 
 
+def taco_ruler_portrait():
+    """Calibration layout: both screens and Menu sit above y 400; the ruler fills y 400 to 560."""
+    return {
+        "size": (414, 896),
+        "frame_r": 50,
+        "screens": [
+            {"in": DS_TOP, "out": (79, 50, 256, 192), "bezel": (73, 44, 268, 204), "bezel_r": 14, "hole_r": 6},
+            {"in": DS_BOTTOM, "out": (127, 258, 160, 120), "bezel": (121, 252, 172, 132), "bezel_r": 12, "hole_r": 5},
+        ],
+        "led": (27.5, 27.5, 3.5),
+        "labels": [("PWR", 37, 21, "left"), ("MENU", 58, 340)],
+        "ruler": (400, 560, 10),
+        "notes": [
+            ("TACO RULER", 207, 600, 13, "icon"),
+            ("Clip the Pocket Taco on, then note the last", 207, 624, 10, "label"),
+            ("line you can fully see. Lines every 10 pt;", 207, 639, 10, "label"),
+            ("red lines every 50 pt.", 207, 654, 10, "label"),
+        ],
+        "items": [
+            {"id": "menu", "kind": "round", "frame": (40, 298, 36, 36), "icon": "menu", "inputs": ["menu"], "ext": 6},
+            {"id": "touch", "kind": "touch", "frame": (127, 258, 160, 120),
+             "inputs": {"x": "touchScreenX", "y": "touchScreenY"}},
+        ],
+    }
+
+
 SKINS = {
     "demo": {
         "name": "Arctic Demo DS",
@@ -442,6 +490,15 @@ SKINS = {
         "version": "v1",
         "gameType": "public.aoshuang.game.ds",
         "orientations": {"portrait": ds_portrait(), "landscape": ds_landscape()},
+    },
+    "ruler": {
+        "name": "Taco Ruler DS",
+        "file": "Taco-Ruler-DS",
+        "identifier": "com.liamdouglas.manic.tacoruler.ds",
+        "version": "v1",
+        "gameType": "public.aoshuang.game.ds",
+        "debug_only": True,
+        "orientations": {"portrait": taco_ruler_portrait(), "landscape": ds_landscape()},
     },
 }
 
