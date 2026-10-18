@@ -44,6 +44,10 @@ STYLE = {
     "accent": "#ff4d4f",
 }
 
+# Pocket Taco safe line, calibrated on device with the Taco Ruler: the y 560 line is the
+# last one fully visible, so nothing interactive goes below 550 on Taco layouts.
+TACO_SAFE_Y = 550
+
 DS_TOP = (0, 0, 256, 192)
 DS_BOTTOM = (0, 192, 256, 192)
 
